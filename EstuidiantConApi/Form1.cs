@@ -77,6 +77,11 @@ namespace EstuidiantConApi
             if (dgvEstudiante.CurrentRow != null)
             {
                 var estudiante = (Estudinate)dgvEstudiante.CurrentRow.DataBoundItem;
+                var confirmacion = MessageBox.Show("¿Está seguro de que desea eliminar este estudiante?", "Confirmación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (confirmacion != DialogResult.Yes)
+                {
+                    return;
+                }
                 var response = await Cle.DeleteAsync($"{baseUrl}/{estudiante.IdEstudiante}");
                 if (response.IsSuccessStatusCode)
                 {
