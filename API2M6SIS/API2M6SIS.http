@@ -1,0 +1,6 @@
+@API2M6SIS_HostAddress = http://localhost:5062
+
+GET {{API2M6SIS_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
