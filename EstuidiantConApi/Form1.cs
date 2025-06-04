@@ -23,58 +23,103 @@ namespace EstuidiantConApi
 
         private async void btnAgregar_Click(object sender, EventArgs e)
         {
-            var estudiante = new Estudinate
+            try
             {
 
-                Nombre = txtNombre.Text,
-                Apellido = txtApellido.Text,
-                Edad = int.Parse(txtEdad.Text),
-                Email = txtEmail.Text
-            };
-            var response = await Cle.PostAsJsonAsync(baseUrl, estudiante);
-            if (response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("Agregardo Correctamente", "Exito");
-                CargarInfo();
+
+                if (ValidarEntrada(txtNombre, txtApellido, txtEdad, txtEmail))
+                {
+                    var estudiante = new Estudinate
+                    {
+
+                        Nombre = txtNombre.Text,
+                        Apellido = txtApellido.Text,
+                        Edad = int.Parse(txtEdad.Text),
+                        Email = txtEmail.Text
+                    };
+
+                    var response = await Cle.PostAsJsonAsync(baseUrl, estudiante);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Agregardo Correctamente", "Exito");
+                        CargarInfo();
+                    }
+                    else
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        MessageBox.Show($"Error: {error}");
+                    }
+                }
             }
-            else
+            catch (Exception)
             {
-                var error = await response.Content.ReadAsStringAsync();
-                MessageBox.Show($"Error: {error}");
+
+                MessageBox.Show("Error al agregar el estudiante. Por favor, verifique los datos ingresados.", "Error");
             }
+        }
+
+        private bool ValidarEntrada(TextBox txtNombre, TextBox txtApellido, TextBox txtEdad, TextBox txtEmail)
+        {
+            if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
+                string.IsNullOrWhiteSpace(txtApellido.Text) ||
+                string.IsNullOrWhiteSpace(txtEdad.Text) ||
+                string.IsNullOrWhiteSpace(txtEmail.Text))
+            {
+                MessageBox.Show("Por favor, complete todos los campos.", "Error");
+                return false;
+            }
+            return true;
         }
 
         private void Actualizar_Click(object sender, EventArgs e)
         {
-            if (dgvEstudiante.CurrentRow != null)
+            try
             {
-                var estudiante = (Estudinate)dgvEstudiante.CurrentRow.DataBoundItem;
-                estudiante.Nombre = txtNombre.Text;
-                estudiante.Apellido = txtApellido.Text;
-                estudiante.Edad = int.Parse(txtEdad.Text);
-                estudiante.Email = txtEmail.Text;
-                var response = Cle.PutAsJsonAsync($"{baseUrl}/{estudiante.IdEstudiante}", estudiante).Result;
-                if (response.IsSuccessStatusCode)
+                if (dgvEstudiante.CurrentRow != null)
                 {
-                    MessageBox.Show("Actualizado Correctamente", "Exito");
-                    CargarInfo();
+                    var estudiante = (Estudinate)dgvEstudiante.CurrentRow.DataBoundItem;
+                    // Validar los campos antes de actualizar
+                    if (ValidarEntrada(txtNombre, txtApellido, txtEdad, txtEmail))
+                    {
+                        estudiante.Nombre = txtNombre.Text;
+                        estudiante.Apellido = txtApellido.Text;
+                        estudiante.Edad = int.Parse(txtEdad.Text);
+                        estudiante.Email = txtEmail.Text;
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    var response = Cle.PutAsJsonAsync($"{baseUrl}/{estudiante.IdEstudiante}", estudiante).Result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("Actualizado Correctamente", "Exito");
+                        CargarInfo();
+                    }
+                    else
+                    {
+                        var error = response.Content.ReadAsStringAsync().Result;
+                        MessageBox.Show($"Error: {error}");
+                    }
+
                 }
                 else
                 {
-                    var error = response.Content.ReadAsStringAsync().Result;
-                    MessageBox.Show($"Error: {error}");
+                    MessageBox.Show("Seleccione un estudiante para actualizar", "Error");
                 }
-
             }
-            else
+            catch (Exception)
             {
-                MessageBox.Show("Seleccione un estudiante para actualizar", "Error");
+
+                MessageBox.Show("Error al agregar el estudiante. Por favor, verifique los datos ingresados.", "Error");
+
             }
         }
 
         private async void btnEliminar_Click(object sender, EventArgs e)
         {
-            if (dgvEstudiante.CurrentRow != null)
+            if (dgvEstudiante.CurrentRow != null )
             {
                 var estudiante = (Estudinate)dgvEstudiante.CurrentRow.DataBoundItem;
                 var confirmacion = MessageBox.Show("¿Está seguro de que desea eliminar este estudiante?", "Confirmación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
